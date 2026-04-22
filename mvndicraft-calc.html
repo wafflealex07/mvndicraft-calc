@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mvndicraft stat calculator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0d0f13;
+  color: #e2e0dc;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.app-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #e24b4a, #d85a30, #ba7517);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+
+.app-header p {
+  font-size: 14px;
+  color: #6b6966;
+}
+
+.section {
+  background: #14161c;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-red { background: #e24b4a; }
+.dot-orange { background: #d85a30; }
+.dot-purple { background: #7f77dd; }
+
+.input-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.input-group {
+  flex: 1;
+  min-width: 120px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 12px;
+  color: #6b6966;
+  margin-bottom: 4px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input-group input {
+  width: 100%;
+  background: #1a1d25;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #e2e0dc;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  border-color: rgba(255,255,255,0.2);
+}
+
+.input-group input::placeholder {
+  color: #3a3835;
+}
+
+.results-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.result-card {
+  flex: 1;
+  min-width: 100px;
+  background: #1a1d25;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.result-card .label {
+  font-size: 11px;
+  color: #6b6966;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.result-card .value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.val-red { color: #e24b4a; }
+.val-orange { color: #d85a30; }
+.val-blue { color: #5b9ef0; }
+.val-green { color: #5dca7a; }
+.val-purple { color: #9b8ef0; }
+.val-amber { color: #ef9f27; }
+
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  margin-top: 0.5rem;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b6966;
+}
+
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend .swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.legend .swatch-line {
+  width: 14px;
+  height: 0;
+  border-top: 2px dashed #555;
+  display: inline-block;
+}
+
+.formula-note {
+  font-size: 12px;
+  color: #4a4845;
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255,255,255,0.04);
+  margin: 1rem 0;
+}
+
+.encumbrance-bar-wrap {
+  margin-top: 8px;
+}
+
+.encumbrance-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: #1a1d25;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.encumbrance-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s, background 0.3s;
+}
+
+.encumbrance-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #4a4845;
+  margin-top: 3px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.weapon-section .input-row { margin-bottom: 0.5rem; }
+
+.add-weapon-btn {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #6b6966;
+  padding: 10px;
+  width: 100%;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  transition: border-color 0.2s, color 0.2s;
+  margin-bottom: 1rem;
+}
+
+.add-weapon-btn:hover {
+  border-color: rgba(255,255,255,0.2);
+  color: #e2e0dc;
+}
+
+.weapon-entry {
+  background: #1a1d25;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.weapon-entry .weapon-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.weapon-entry .weapon-name-input {
+  background: transparent;
+  border: none;
+  color: #e2e0dc;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  width: 70%;
+}
+
+.weapon-entry .weapon-name-input::placeholder { color: #3a3835; }
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: #4a4845;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.remove-btn:hover {
+  color: #e24b4a;
+  background: rgba(226,75,74,0.1);
+}
+
+.weapon-result {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: #6b6966;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  line-height: 1.8;
+}
+
+.weapon-result .total {
+  font-size: 18px;
+  font-weight: 700;
+  color: #9b8ef0;
+}
+
+.weapon-compare-chart { margin-top: 1rem; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="app-header">
+    <h1>Mvndicraft stat calculator</h1>
+    <p>Health, endurance, and weapon damage — all in one place</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="dot dot-red"></span> Health (vitality)</div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Vitality level</label>
+        <input type="number" id="vit" min="1" max="99" value="12" placeholder="1–99">
+      </div>
+    </div>
+    <div class="results-bar">
+      <div class="result-card">
+        <div class="label">Health</div>
+        <div class="value val-red" id="hpVal">45.5 HP</div>
+      </div>
+      <div class="result-card">
+        <div class="label">Hearts</div>
+        <div class="value val-red" id="heartsVal">5.7</div>
+      </div>
+      <div class="result-card">
+        <div class="label">HP per point</div>
+        <div class="value val-red">+0.5</div>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="healthChart" role="img" aria-label="Health curve by vitality level"></canvas></div>
+    <div class="legend">
+      <span><span class="swatch" style="background:#e24b4a;"></span> Health (HP)</span>
+      <span><span class="swatch-line"></span> Your level</span>
+    </div>
+    <div class="formula-note">formula: 40 + (VIT - 1) x 0.5</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="dot dot-orange"></span> Endurance</div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Endurance level</label>
+        <input type="number" id="end" min="1" max="99" value="17" placeholder="1–99">
+      </div>
+      <div class="input-group">
+        <label>Current weight</label>
+        <input type="number" id="weight" min="0" max="200" value="15" step="0.5" placeholder="total gear weight">
+      </div>
+    </div>
+    <div class="results-bar">
+      <div class="result-card">
+        <div class="label">Stamina</div>
+        <div class="value val-orange" id="stamVal">29.6</div>
+      </div>
+      <div class="result-card">
+        <div class="label">Equip load</div>
+        <div class="value val-blue" id="eqVal">66</div>
+      </div>
+      <div class="result-card">
+        <div class="label">Encumbrance</div>
+        <div class="value val-amber" id="encVal">22.7%</div>
+      </div>
+      <div class="result-card">
+        <div class="label">Move speed</div>
+        <div class="value val-green" id="speedVal">100%</div>
+      </div>
+    </div>
+    <div class="encumbrance-bar-wrap">
+      <div class="encumbrance-bar-bg"><div class="encumbrance-bar-fill" id="encBar"></div></div>
+      <div class="encumbrance-labels"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+    </div>
+    <div class="chart-wrap" style="margin-top:1rem;"><canvas id="endChart" role="img" aria-label="Stamina and equip load curves by endurance level"></canvas></div>
+    <div class="legend">
+      <span><span class="swatch" style="background:#d85a30;"></span> Stamina</span>
+      <span><span class="swatch" style="background:#5b9ef0;"></span> Equip load</span>
+      <span><span class="swatch-line"></span> Your level</span>
+    </div>
+    <div class="formula-note">stamina: 20 + (END - 1) x 0.6 &nbsp;|&nbsp; equip load: 50 + (END - 1)</div>
+  </div>
+
+  <div class="section weapon-section">
+    <div class="section-title"><span class="dot dot-purple"></span> Weapon damage</div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Strength level</label>
+        <input type="number" id="str" min="1" max="99" value="5" placeholder="1–99">
+      </div>
+      <div class="input-group">
+        <label>Dexterity level</label>
+        <input type="number" id="dex" min="1" max="99" value="32" placeholder="1–99">
+      </div>
+    </div>
+    <div class="results-bar">
+      <div class="result-card">
+        <div class="label">STR bonus %</div>
+        <div class="value val-amber" id="strBonusVal">8.85%</div>
+      </div>
+      <div class="result-card">
+        <div class="label">DEX bonus %</div>
+        <div class="value val-purple" id="dexBonusVal">47.20%</div>
+      </div>
+    </div>
+
+    <div id="weaponList"></div>
+    <button class="add-weapon-btn" id="addWeaponBtn">+ Add weapon</button>
+
+    <div class="chart-wrap" style="height:260px;"><canvas id="weaponChart" role="img" aria-label="Weapon damage comparison bar chart"></canvas></div>
+    <div class="legend">
+      <span><span class="swatch" style="background:#9b8ef0;"></span> Total damage</span>
+      <span><span class="swatch" style="background:rgba(155,142,240,0.3);"></span> Base damage</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="font-size: 13px; color: #6b6966; margin-top: 4px;">Damage scaling curve (selected weapon)</div>
+    <div class="input-row" style="margin-top:8px;">
+      <div class="input-group" style="max-width:200px;">
+        <label>Show curve for</label>
+        <select id="curveSelect" style="width:100%;background:#1a1d25;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:#e2e0dc;font-family:'Outfit',sans-serif;font-size:14px;outline:none;">
+        </select>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height:240px;"><canvas id="scalingChart" role="img" aria-label="Weapon damage curve by DEX level"></canvas></div>
+    <div class="legend">
+      <span><span class="swatch" style="background:#9b8ef0;"></span> Total damage by DEX</span>
+      <span><span class="swatch-line"></span> Your DEX</span>
+    </div>
+    <div class="formula-note">rating: 130 x (1 - 0.986^x) / 100</div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const levels = Array.from({length: 99}, (_, i) => i + 1);
+const rating = x => 130 * (1 - Math.pow(0.986, x)) / 100;
+
+let weapons = [
+  { id: 1, name: 'Shortsword', baseDmg: 11.2, strPct: 51, dexPct: 51 },
+  { id: 2, name: 'Short Bow', baseDmg: 23, strPct: 0, dexPct: 50 },
+  { id: 3, name: 'Pike', baseDmg: 14.8, strPct: 0, dexPct: 72 },
+];
+let nextId = 4;
+
+const chartColors = {
+  grid: 'rgba(255,255,255,0.04)',
+  tick: '#4a4845',
+  title: '#6b6966'
+};
+
+const commonScales = (xLabel, yLabel, yMin, yMax) => ({
+  x: {
+    title: { display: true, text: xLabel, color: chartColors.title, font: { size: 11, family: 'Outfit' } },
+    ticks: { autoSkip: true, maxTicksLimit: 15, color: chartColors.tick, font: { size: 10 } },
+    grid: { display: false }
+  },
+  y: {
+    title: { display: true, text: yLabel, color: chartColors.title, font: { size: 11, family: 'Outfit' } },
+    min: yMin, max: yMax,
+    ticks: { color: chartColors.tick, font: { size: 10 } },
+    grid: { color: chartColors.grid }
+  }
+});
+
+const annotationLine = (xIdx, label) => ({
+  type: 'line', xMin: xIdx, xMax: xIdx,
+  borderColor: '#555', borderWidth: 1.5, borderDash: [5, 4],
+  label: { display: true, content: label, position: 'end', font: { size: 10, family: 'Outfit' }, backgroundColor: 'rgba(0,0,0,0.7)', color: '#ccc', padding: 4 }
+});
+
+let healthChart, endChart, weaponChart, scalingChart;
+
+function buildHealthChart() {
+  const vit = Math.max(1, Math.min(99, parseInt($('vit').value) || 1));
+  const hp = 40 + (vit - 1) * 0.5;
+  const hearts = hp / 4;
+  $('hpVal').textContent = hp.toFixed(1) + ' HP';
+  $('heartsVal').textContent = (Math.round(hearts * 10) / 10).toString();
+
+  const data = levels.map(x => Math.round((40 + (x - 1) * 0.5) * 10) / 10);
+  if (healthChart) healthChart.destroy();
+  healthChart = new Chart($('healthChart'), {
+    type: 'line',
+    data: { labels: levels, datasets: [{ data, borderColor: '#e24b4a', backgroundColor: 'rgba(226,75,74,0.06)', fill: true, tension: 0, pointRadius: 0, pointHitRadius: 8, borderWidth: 2 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        annotation: { annotations: { you: annotationLine(vit - 1, hp.toFixed(1) + ' HP') } },
+        tooltip: { callbacks: { title: i => 'VIT ' + i[0].label, label: i => i.raw.toFixed(1) + ' HP' } }
+      },
+      scales: commonScales('Vitality', 'HP', 35, 95)
+    }
+  });
+}
+
+function buildEndChart() {
+  const end = Math.max(1, Math.min(99, parseInt($('end').value) || 1));
+  const wt = parseFloat($('weight').value) || 0;
+  const stam = 20 + (end - 1) * 0.6;
+  const eq = 50 + (end - 1);
+  const enc = eq > 0 ? (wt / eq) * 100 : 0;
+
+  let spd, spdColor, barColor;
+  if (enc <= 0) { spd = 110; spdColor = '#5dca7a'; barColor = '#5dca7a'; }
+  else if (enc <= 25) { spd = 100; spdColor = '#5dca7a'; barColor = '#5dca7a'; }
+  else if (enc <= 50) { spd = 90; spdColor = '#ef9f27'; barColor = '#ef9f27'; }
+  else if (enc <= 75) { spd = 70; spdColor = '#d85a30'; barColor = '#d85a30'; }
+  else if (enc < 100) { spd = 70; spdColor = '#e24b4a'; barColor = '#e24b4a'; }
+  else { spd = 50; spdColor = '#e24b4a'; barColor = '#e24b4a'; }
+
+  $('stamVal').textContent = (Math.round(stam * 10) / 10).toString();
+  $('eqVal').textContent = eq.toString();
+  $('encVal').textContent = Math.round(enc * 10) / 10 + '%';
+  $('encVal').style.color = spdColor;
+  $('speedVal').textContent = spd + '%';
+  $('speedVal').style.color = spdColor;
+  $('encBar').style.width = Math.min(100, enc) + '%';
+  $('encBar').style.background = barColor;
+
+  const stamData = levels.map(x => Math.round((20 + (x - 1) * 0.6) * 10) / 10);
+  const eqData = levels.map(x => 50 + (x - 1));
+
+  if (endChart) endChart.destroy();
+  endChart = new Chart($('endChart'), {
+    type: 'line',
+    data: {
+      labels: levels,
+      datasets: [
+        { data: stamData, borderColor: '#d85a30', backgroundColor: 'rgba(216,90,48,0.06)', fill: true, tension: 0, pointRadius: 0, pointHitRadius: 8, borderWidth: 2, yAxisID: 'y' },
+        { data: eqData, borderColor: '#5b9ef0', backgroundColor: 'transparent', fill: false, tension: 0, pointRadius: 0, pointHitRadius: 8, borderWidth: 2, borderDash: [6, 3], yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        annotation: { annotations: { you: annotationLine(end - 1, 'END ' + end) } },
+        tooltip: { callbacks: { title: i => 'END ' + i[0].label, label: i => i.datasetIndex === 0 ? 'Stamina: ' + i.raw.toFixed(1) : 'Equip load: ' + i.raw } }
+      },
+      scales: {
+        ...commonScales('Endurance', 'Stamina', 15, 85),
+        y1: {
+          title: { display: true, text: 'Equip load', color: chartColors.title, font: { size: 11, family: 'Outfit' } },
+          min: 40, max: 155, position: 'right',
+          ticks: { color: chartColors.tick, font: { size: 10 } },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function calcWeaponDamage(w, strLvl, dexLvl) {
+  const strR = rating(strLvl);
+  const dexR = rating(dexLvl);
+  const strScalable = w.baseDmg * (w.strPct / 100);
+  const dexScalable = w.baseDmg * (w.dexPct / 100);
+  const strBonus = strR * strScalable;
+  const dexBonus = dexR * dexScalable;
+  return { total: w.baseDmg + strBonus + dexBonus, strBonus, dexBonus };
+}
+
+function renderWeapons() {
+  const list = $('weaponList');
+  list.innerHTML = '';
+  const strLvl = Math.max(1, Math.min(99, parseInt($('str').value) || 1));
+  const dexLvl = Math.max(1, Math.min(99, parseInt($('dex').value) || 1));
+
+  weapons.forEach(w => {
+    const { total, strBonus, dexBonus } = calcWeaponDamage(w, strLvl, dexLvl);
+    const el = document.createElement('div');
+    el.className = 'weapon-entry';
+    el.innerHTML = `
+      <div class="weapon-header">
+        <input class="weapon-name-input" value="${w.name}" placeholder="Weapon name" data-id="${w.id}" data-field="name">
+        <button class="remove-btn" data-id="${w.id}">&times;</button>
+      </div>
+      <div class="input-row" style="gap:8px;">
+        <div class="input-group" style="min-width:80px;">
+          <label>Base dmg</label>
+          <input type="number" step="0.1" min="0" value="${w.baseDmg}" data-id="${w.id}" data-field="baseDmg" placeholder="0">
+        </div>
+        <div class="input-group" style="min-width:80px;">
+          <label>STR %</label>
+          <input type="number" step="1" min="0" max="200" value="${w.strPct}" data-id="${w.id}" data-field="strPct" placeholder="0">
+        </div>
+        <div class="input-group" style="min-width:80px;">
+          <label>DEX %</label>
+          <input type="number" step="1" min="0" max="200" value="${w.dexPct}" data-id="${w.id}" data-field="dexPct" placeholder="0">
+        </div>
+      </div>
+      <div class="weapon-result">
+        STR bonus: <span style="color:#ef9f27;">+${strBonus.toFixed(3)}</span> &nbsp; DEX bonus: <span style="color:#9b8ef0;">+${dexBonus.toFixed(3)}</span><br>
+        Total: <span class="total">${total.toFixed(2)}</span>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+
+  list.querySelectorAll('input[data-field]').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const id = parseInt(e.target.dataset.id);
+      const field = e.target.dataset.field;
+      const w = weapons.find(w => w.id === id);
+      if (!w) return;
+      if (field === 'name') w.name = e.target.value;
+      else w[field] = parseFloat(e.target.value) || 0;
+      updateWeaponResults();
+      buildWeaponChart();
+      buildScalingChart();
+      updateCurveSelect();
+    });
+  });
+
+  list.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = parseInt(e.target.dataset.id);
+      weapons = weapons.filter(w => w.id !== id);
+      renderWeapons();
+      buildWeaponChart();
+      buildScalingChart();
+      updateCurveSelect();
+    });
+  });
+}
+
+function updateWeaponResults() {
+  const strLvl = Math.max(1, Math.min(99, parseInt($('str').value) || 1));
+  const dexLvl = Math.max(1, Math.min(99, parseInt($('dex').value) || 1));
+
+  $('strBonusVal').textContent = (rating(strLvl) * 100).toFixed(2) + '%';
+  $('dexBonusVal').textContent = (rating(dexLvl) * 100).toFixed(2) + '%';
+
+  const entries = $('weaponList').querySelectorAll('.weapon-entry');
+  weapons.forEach((w, i) => {
+    if (!entries[i]) return;
+    const { total, strBonus, dexBonus } = calcWeaponDamage(w, strLvl, dexLvl);
+    const resultDiv = entries[i].querySelector('.weapon-result');
+    resultDiv.innerHTML = `
+      STR bonus: <span style="color:#ef9f27;">+${strBonus.toFixed(3)}</span> &nbsp; DEX bonus: <span style="color:#9b8ef0;">+${dexBonus.toFixed(3)}</span><br>
+      Total: <span class="total">${total.toFixed(2)}</span>
+    `;
+  });
+}
+
+function buildWeaponChart() {
+  const strLvl = Math.max(1, Math.min(99, parseInt($('str').value) || 1));
+  const dexLvl = Math.max(1, Math.min(99, parseInt($('dex').value) || 1));
+
+  const labels = weapons.map(w => w.name || 'Unnamed');
+  const totals = weapons.map(w => Math.round(calcWeaponDamage(w, strLvl, dexLvl).total * 100) / 100);
+  const bases = weapons.map(w => w.baseDmg);
+
+  if (weaponChart) weaponChart.destroy();
+  if (weapons.length === 0) return;
+
+  const maxVal = Math.max(...totals, ...bases) + 5;
+  weaponChart = new Chart($('weaponChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Total', data: totals, backgroundColor: '#9b8ef0', borderRadius: 4, barPercentage: 0.6 },
+        { label: 'Base', data: bases, backgroundColor: 'rgba(155,142,240,0.2)', borderRadius: 4, barPercentage: 0.6 }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: i => (i.datasetIndex === 0 ? 'Total: ' : 'Base: ') + i.raw.toFixed(2)
+          }
+        }
+      },
+      scales: {
+        x: { max: maxVal, ticks: { color: chartColors.tick, font: { size: 10 } }, grid: { color: chartColors.grid } },
+        y: { ticks: { color: '#e2e0dc', font: { size: 12, family: 'Outfit' } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function updateCurveSelect() {
+  const sel = $('curveSelect');
+  const prev = sel.value;
+  sel.innerHTML = '';
+  weapons.forEach(w => {
+    const opt = document.createElement('option');
+    opt.value = w.id;
+    opt.textContent = w.name || 'Unnamed';
+    sel.appendChild(opt);
+  });
+  if (weapons.find(w => w.id == prev)) sel.value = prev;
+}
+
+function buildScalingChart() {
+  const sel = $('curveSelect');
+  const wId = parseInt(sel.value);
+  const w = weapons.find(w => w.id === wId);
+  const strLvl = Math.max(1, Math.min(99, parseInt($('str').value) || 1));
+  const dexLvl = Math.max(1, Math.min(99, parseInt($('dex').value) || 1));
+
+  if (scalingChart) scalingChart.destroy();
+  if (!w) return;
+
+  const strScalable = w.baseDmg * (w.strPct / 100);
+  const dexScalable = w.baseDmg * (w.dexPct / 100);
+
+  const data = levels.map(x => {
+    const strR = rating(strLvl);
+    const dexR = rating(x);
+    return Math.round((w.baseDmg + strR * strScalable + dexR * dexScalable) * 100) / 100;
+  });
+
+  const yMin = Math.floor(w.baseDmg - 1);
+  const yMax = Math.ceil(Math.max(...data) + 2);
+
+  scalingChart = new Chart($('scalingChart'), {
+    type: 'line',
+    data: {
+      labels: levels,
+      datasets: [{ data, borderColor: '#9b8ef0', backgroundColor: 'rgba(155,142,240,0.06)', fill: true, tension: 0.3, pointRadius: 0, pointHitRadius: 8, borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        annotation: { annotations: { you: annotationLine(dexLvl - 1, 'DEX ' + dexLvl) } },
+        tooltip: { callbacks: { title: i => 'DEX ' + i[0].label, label: i => 'Damage: ' + i.raw.toFixed(2) } }
+      },
+      scales: commonScales('Dexterity level', 'Total damage', yMin, yMax)
+    }
+  });
+}
+
+$('vit').addEventListener('input', buildHealthChart);
+$('end').addEventListener('input', () => { buildEndChart(); });
+$('weight').addEventListener('input', buildEndChart);
+$('str').addEventListener('input', () => { renderWeapons(); buildWeaponChart(); buildScalingChart(); });
+$('dex').addEventListener('input', () => { renderWeapons(); buildWeaponChart(); buildScalingChart(); });
+$('addWeaponBtn').addEventListener('click', () => {
+  weapons.push({ id: nextId++, name: '', baseDmg: 0, strPct: 0, dexPct: 0 });
+  renderWeapons();
+  buildWeaponChart();
+  updateCurveSelect();
+  buildScalingChart();
+});
+$('curveSelect').addEventListener('change', buildScalingChart);
+
+buildHealthChart();
+buildEndChart();
+renderWeapons();
+buildWeaponChart();
+updateCurveSelect();
+buildScalingChart();
+</script>
+</body>
+</html>
